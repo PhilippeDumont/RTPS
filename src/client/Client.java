@@ -127,7 +127,7 @@ public class Client {
 
         //get video filename to request:
         VideoFileName = "video/movie.Mjpeg";
-        // VideoFileName = "video/lab-test-video.mp4";
+        //VideoFileName = "video/lab-test-video.mp4";
 
         //Establish a TCP connection with the server to exchange RTSP messages
         //------------------

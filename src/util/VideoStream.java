@@ -2,40 +2,55 @@ package util;
 
 //VideoStream
 
+import io.humble.video.Demuxer;
+import io.humble.video.DemuxerFormat;
+
 import java.io.FileInputStream;
 
 public class VideoStream {
 
-    FileInputStream fis; //video file
-    int frame_nb; //current frame nb
+	FileInputStream fis; // video file
+	int frame_nb; // current frame nb
+	private String filename;
 
-    //-----------------------------------
-    //constructor
-    //-----------------------------------
-    public VideoStream(String filename) throws Exception {
+	// -----------------------------------
+	// constructor
+	// -----------------------------------
+	public VideoStream(String filename) throws Exception {
 
-        //init variables
-        fis = new FileInputStream(filename);
-        frame_nb = 0;
-    }
+		this.filename = filename;
 
-    //-----------------------------------
-    // getnextframe
-    //returns the next frame as an array of byte and the size of the frame
-    //-----------------------------------
-    public int getnextframe(byte[] frame) throws Exception {
-        int length;
-        String length_string;
-        byte[] frame_length = new byte[5];
+		// init variables
+		fis = new FileInputStream(filename);
+		frame_nb = 0;
+	}
 
-        //read current frame length
-        fis.read(frame_length, 0, 5);
+	// -----------------------------------
+	// getnextframe
+	// returns the next frame as an array of byte and the size of the frame
+	// -----------------------------------
+	public int getnextframe(byte[] frame) throws Exception {
 
-        //transform frame_length to integer
-        length_string = new String(frame_length);
-        length = Integer.parseInt(length_string);
+		// TEST Humble
 
-        return (fis.read(frame, 0, length));
-    }
+		Demuxer demuxer = Demuxer.make();
+		demuxer.open(filename, null, false, true, null, null);
+
+		final DemuxerFormat format = demuxer.getFormat();
+		System.out.printf("URL: '%s' (%s: %s)\n", demuxer.getURL(),
+				format.getLongName(), format.getName());
+
+		int length;
+		String length_string;
+		byte[] frame_length = new byte[5];
+
+		// read current frame length
+		fis.read(frame_length, 0, 5);
+
+		// transform frame_length to integer
+		length_string = new String(frame_length);
+		length = Integer.parseInt(length_string);
+
+		return (fis.read(frame, 0, length));
+	}
 }
-
