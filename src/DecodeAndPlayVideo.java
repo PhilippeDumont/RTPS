@@ -13,12 +13,6 @@ import io.humble.video.awt.MediaPictureConverterFactory;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.text.ParseException;
-
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Options;
 
 /**
  * Opens a media file, finds the first video stream, and then plays it. This is
@@ -70,6 +64,7 @@ public class DecodeAndPlayVideo {
 		 * Query how many streams the call to open found
 		 */
 		int numStreams = demuxer.getNumStreams();
+		
 
 		/*
 		 * Iterate through the streams to find the first video stream
@@ -77,10 +72,14 @@ public class DecodeAndPlayVideo {
 		int videoStreamId = -1;
 		long streamStartTime = Global.NO_PTS;
 		Decoder videoDecoder = null;
+
 		for (int i = 0; i < numStreams; i++) {
+			
 			final DemuxerStream stream = demuxer.getStream(i);
 			streamStartTime = stream.getStartTime();
+			
 			final Decoder decoder = stream.getDecoder();
+			
 			if (decoder != null
 					&& decoder.getCodecType() == MediaDescriptor.Type.MEDIA_VIDEO) {
 				videoStreamId = i;
@@ -89,6 +88,7 @@ public class DecodeAndPlayVideo {
 				break;
 			}
 		}
+
 		if (videoStreamId == -1)
 			throw new RuntimeException(
 					"could not find video stream in container: " + filename);
@@ -156,7 +156,7 @@ public class DecodeAndPlayVideo {
 		long systemStartTime = System.nanoTime();
 		// Set units for the system time, which because we used System.nanoTime
 		// will be in nanoseconds.
-		final Rational systemTimeBase = Rational.make(1, 1000000000);
+		final Rational systemTimeBase = Rational.make(1, 1000000);
 		// All the MediaPicture objects decoded from the videoDecoder will share
 		// this timebase.
 		final Rational streamTimebase = videoDecoder.getTimeBase();
@@ -171,7 +171,13 @@ public class DecodeAndPlayVideo {
 		 * unnecessary reallocation.
 		 */
 		final MediaPacket packet = MediaPacket.make();
+		
+		
+		int nbPacket = 0;
 		while (demuxer.read(packet) >= 0) {
+			
+			System.out.println("nb of packet = " + nbPacket);
+			nbPacket++;
 			/**
 			 * Now we have a packet, let's see if it belongs to our video stream
 			 */
@@ -184,32 +190,19 @@ public class DecodeAndPlayVideo {
 				 */
 				int offset = 0;
 				int bytesRead = 0;
-				do {
-					bytesRead += videoDecoder.decode(picture, packet, offset);
+
+					videoDecoder.decode(picture, packet, offset);
+					
 					if (picture.isComplete()) {
 						image = displayVideoAtCorrectTime(streamStartTime,
 								picture, converter, image, window,
 								systemStartTime, systemTimeBase, streamTimebase);
 					}
-					offset += bytesRead;
-				} while (offset < packet.getSize());
+					
+					
 			}
 		}
 
-		// Some video decoders (especially advanced ones) will cache
-		// video data before they begin decoding, so when you are done you need
-		// to flush them. The convention to flush Encoders or Decoders in Humble
-		// Video
-		// is to keep passing in null until incomplete samples or packets are
-		// returned.
-		do {
-			videoDecoder.decode(picture, null, 0);
-			if (picture.isComplete()) {
-				image = displayVideoAtCorrectTime(streamStartTime, picture,
-						converter, image, window, systemStartTime,
-						systemTimeBase, streamTimebase);
-			}
-		} while (picture.isComplete());
 
 		// It is good practice to close demuxers when you're done to free
 		// up file handles. Humble will EVENTUALLY detect if nothing else
@@ -232,12 +225,17 @@ public class DecodeAndPlayVideo {
 			final ImageFrame window, long systemStartTime,
 			final Rational systemTimeBase, final Rational streamTimebase)
 			throws InterruptedException {
+		
 		long streamTimestamp = picture.getTimeStamp();
+		
 		// convert streamTimestamp into system units (i.e. nano-seconds)
+		
 		streamTimestamp = systemTimeBase.rescale(streamTimestamp
 				- streamStartTime, streamTimebase);
+		
 		// get the current clock time, with our most accurate clock
 		long systemTimestamp = System.nanoTime();
+		
 		// loop in a sleeping loop until we're within 1 ms of the time for that
 		// video frame.
 		// a real video player needs to be much more sophisticated than this.
@@ -248,7 +246,10 @@ public class DecodeAndPlayVideo {
 		// finally, convert the image from Humble format into Java images.
 		image = converter.toImage(image, picture);
 		// And ask the UI thread to repaint with the new image.
+		
 		window.setImage(image);
+		
+		
 		return image;
 	}
 
@@ -266,7 +267,7 @@ public class DecodeAndPlayVideo {
 			IOException, org.apache.commons.cli.ParseException {
 
 		playVideo("video/lab-test-video.mp4");
-		
+
 	}
 
 }

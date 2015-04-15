@@ -189,6 +189,10 @@ public class Server extends JFrame implements ActionListener {
     //------------------------
     //Handler for timer
     //------------------------
+    
+    /**
+     * This fuction is executed when the timer run each FRAME_PERIOD
+     */
     public void actionPerformed(ActionEvent e) {
 
         //if the current image nb is less than the length of the video
@@ -224,10 +228,7 @@ public class Server extends JFrame implements ActionListener {
                 e1.printStackTrace();
             }
 
-            //System.out.println("Send frame #"+imagenb);
-            //print the header bitstream
-            rtp_packet.printheader();
-
+           
             //update GUI
             label.setText("Send frame #" + imagenb);
 
