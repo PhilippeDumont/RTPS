@@ -32,6 +32,7 @@ public class RTPpacket {
 
 	/**
 	 * Construction of a packet to send
+	 * 
 	 * @param PType
 	 * @param Framenb
 	 * @param Time
@@ -47,7 +48,7 @@ public class RTPpacket {
 		CC = 0;
 		Marker = 0;
 		Ssrc = 0;
-		
+
 		PayloadType = PType;
 		SequenceNumber = Framenb;
 		TimeStamp = Time;
@@ -68,14 +69,14 @@ public class RTPpacket {
 
 	}
 
-	
 	/**
 	 * Construction of a packet to receive
+	 * 
 	 * @param packet
 	 * @param packet_size
 	 */
 	public RTPpacket(byte[] packet, int packet_size) {
-		
+
 		Version = 2;
 		Padding = 0;
 		Extension = 0;
@@ -85,8 +86,7 @@ public class RTPpacket {
 
 		// check if total packet size is lower than the header size
 		if (packet_size >= HEADER_SIZE) {
-			
-			
+
 			arraycopy(packet, 0, header, 0, HEADER_SIZE);
 
 			// get the payload bitstream:
@@ -95,13 +95,12 @@ public class RTPpacket {
 			arraycopy(packet, HEADER_SIZE, payload, HEADER_SIZE - HEADER_SIZE,
 					packet_size - HEADER_SIZE);
 
-			
 			// interpret the changing fields of the header:
 			PayloadType = header[1] & 127;
-			
+
 			SequenceNumber = unsigned_int(header[3]) + 256
 					* unsigned_int(header[2]);
-			
+
 			TimeStamp = unsigned_int(header[7]) + 256 * unsigned_int(header[6])
 					+ 65536 * unsigned_int(header[5]) + 16777216
 					* unsigned_int(header[4]);
@@ -112,9 +111,11 @@ public class RTPpacket {
 		return data;
 	}
 
-	// --------------------------
-	// getpayload: return the payload bistream of the RTPpacket and its size
-	// --------------------------
+	/**
+	 * 
+	 * @param data
+	 * @return the payload bistream of the RTPpacket and its size
+	 */
 	public int getpayload(byte[] data) {
 
 		arraycopy(payload, 0, data, 0, payload_size);

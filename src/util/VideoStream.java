@@ -8,26 +8,27 @@ import io.humble.video.DemuxerStream;
 import io.humble.video.MediaDescriptor;
 import io.humble.video.MediaPacket;
 import io.humble.video.MediaPicture;
-import io.humble.video.awt.ImageFrame;
 import io.humble.video.awt.MediaPictureConverter;
 import io.humble.video.awt.MediaPictureConverterFactory;
 
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+
+import javax.imageio.ImageIO;
 
 public class VideoStream {
 
 	FileInputStream fis; // video file
 	int frame_nb; // current frame nb
 	private String filename;
+	private int currentFrame;
 
-	private List<MediaPicture> images;
+	private List<BufferedImage> frames;
 
-	// -----------------------------------
-	// constructor
-	// -----------------------------------
 	public VideoStream(String filename) throws Exception {
 
 		this.filename = filename;
@@ -35,6 +36,27 @@ public class VideoStream {
 		// init variables
 		fis = new FileInputStream(filename);
 		frame_nb = 0;
+
+		frames = new ArrayList<BufferedImage>();
+		currentFrame = 0;
+
+		buildFrames();
+	}
+
+	public byte[] getNextFrame() throws IOException {
+
+		BufferedImage image = frames.get(currentFrame);
+
+		ByteArrayOutputStream stream = new ByteArrayOutputStream();
+		ImageIO.write(image, "jpeg", stream);
+		stream.flush();
+		byte[] bytes = stream.toByteArray();
+		stream.close();
+
+		currentFrame++;
+
+		return bytes;
+
 	}
 
 	// -----------------------------------
@@ -50,7 +72,7 @@ public class VideoStream {
 		// read current frame length
 		fis.read(frame_length, 0, 5);
 
-		// transform frame_length to integer
+		// transform frame_length to integer, who is the size of the picture
 		length_string = new String(frame_length);
 
 		length = Integer.parseInt(length_string);
@@ -58,7 +80,13 @@ public class VideoStream {
 		return (fis.read(frame, 0, length));
 	}
 
-	public void buildImages() throws InterruptedException, IOException {
+	/**
+	 * Create an List with all the frame content in the video file.
+	 * 
+	 * @throws InterruptedException
+	 * @throws IOException
+	 */
+	private void buildFrames() throws InterruptedException, IOException {
 
 		Demuxer demuxer = Demuxer.make();
 		demuxer.open(filename, null, false, true, null, null);
@@ -71,7 +99,6 @@ public class VideoStream {
 
 			final DemuxerStream stream = demuxer.getStream(i);
 			final Decoder decoder = stream.getDecoder();
-
 			if (decoder != null
 					&& decoder.getCodecType() == MediaDescriptor.Type.MEDIA_VIDEO) {
 				videoStreamId = i;
@@ -80,9 +107,10 @@ public class VideoStream {
 			}
 		}
 
-		if (videoStreamId == -1)
+		if (videoStreamId == -1) {
 			throw new RuntimeException(
 					"could not find video stream in container: " + filename);
+		}
 
 		videoDecoder.open(null, null);
 
@@ -92,53 +120,25 @@ public class VideoStream {
 		final MediaPictureConverter converter = MediaPictureConverterFactory
 				.createConverter(MediaPictureConverterFactory.HUMBLE_BGR_24,
 						picture);
+
 		BufferedImage image = null;
-
-		final ImageFrame window = ImageFrame.make();
-
-		if (window == null) {
-			throw new RuntimeException(
-					"Attempting this demo on a headless machine, and that will not work. Sad day for you.");
-		}
-
-		
 
 		final MediaPacket packet = MediaPacket.make();
 		while (demuxer.read(packet) >= 0) {
-			
+
 			if (packet.getStreamIndex() == videoStreamId) {
-				
 
 				videoDecoder.decode(picture, packet, 0);
 				if (picture.isComplete()) {
-					
+
 					image = converter.toImage(image, picture);
-					
+					this.frames.add(image);
+
 				}
 			}
 		}
 
 		demuxer.close();
-
-		
-		window.dispose();
-	}
-
-	/**
-	 * Takes the video picture and displays it at the right time.
-	 */
-	private static BufferedImage displayVideoAtCorrectTime(
-			final MediaPicture picture, final MediaPictureConverter converter,
-			BufferedImage image, final ImageFrame window)
-			throws InterruptedException {
-
-		// finally, convert the image from Humble format into Java images.
-		image = converter.toImage(image, picture);
-		// And ask the UI thread to repaint with the new image.
-
-		window.setImage(image);
-
-		return image;
 	}
 
 }

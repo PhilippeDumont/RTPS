@@ -5,17 +5,40 @@ package client;
    usage: java Client [Server hostname] [Server RTSP listening port] [Video file requested]
    ---------------------- */
 
-import util.RTPpacket;
-
-import javax.swing.*;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.GridLayout;
+import java.awt.Image;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.*;
-import java.net.*;
+import java.awt.image.BufferedImage;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.InterruptedIOException;
+import java.io.OutputStreamWriter;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.Socket;
+import java.net.SocketException;
 import java.util.StringTokenizer;
+
+import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.Timer;
+
+import util.RTPpacket;
 
 public class Client {
 
@@ -126,8 +149,8 @@ public class Client {
         InetAddress ServerIPAddr = InetAddress.getLocalHost();
 
         //get video filename to request:
-        VideoFileName = "video/movie.Mjpeg";
-        //VideoFileName = "video/lab-test-video.mp4";
+        //VideoFileName = "video/movie.Mjpeg";
+        VideoFileName = "video/lab-test-video.mp4";
 
         //Establish a TCP connection with the server to exchange RTSP messages
         //------------------
@@ -146,10 +169,7 @@ public class Client {
     //Handler for buttons
     //------------------------------------
 
-    //.............
-    //TO COMPLETE
-    //.............
-
+    
     //Handler for Setup button
     //-----------------------
     class setupButtonListener implements ActionListener {
@@ -291,29 +311,31 @@ public class Client {
             rcvdp = new DatagramPacket(buf, buf.length);
 
             try {
-                //receive the DP from the socket:
+                //receive the DP from the socket and put in rcvdp
                 RTPsocket.receive(rcvdp);
 
-                //create an RTPpacket object from the DP
+                //create an RTPpacket with new data received
                 RTPpacket rtp_packet = new RTPpacket(rcvdp.getData(), rcvdp.getLength());
 
-                //print important header fields of the RTP packet received:
-                System.out.println("Got RTP packet with SeqNum # " + rtp_packet.getsequencenumber() + " TimeStamp " + rtp_packet.gettimestamp() + " ms, of type " + rtp_packet.getpayloadtype());
 
-                //print header bitstream:
-                //rtp_packet.printheader();
-
-                //get the payload bitstream from the RTPpacket object
+                //get the length of the payload
                 int payload_length = rtp_packet.getpayload_length();
+                
+                // init the byte array
                 byte[] payload = new byte[payload_length];
+                
                 rtp_packet.getpayload(payload);
 
                 //get an Image object from the payload bitstream
                 Toolkit toolkit = Toolkit.getDefaultToolkit();
+                
                 Image image = toolkit.createImage(payload, 0, payload_length);
+                
+                InputStream in = new ByteArrayInputStream(payload);
+                BufferedImage bImageFromConvert = ImageIO.read(in);
 
                 //display the image as an ImageIcon object
-                icon = new ImageIcon(image);
+                icon = new ImageIcon(bImageFromConvert);
                 iconLabel.setIcon(icon);
             } catch (InterruptedIOException iioe) {
                 //System.out.println("Nothing to read");
@@ -333,7 +355,6 @@ public class Client {
             //parse status line and extract the reply_code:
             String StatusLine = RTSPBufferedReader.readLine();
             //System.out.println("RTSP Client - Received from Server:");
-            System.out.println(StatusLine);
 
             StringTokenizer tokens = new StringTokenizer(StatusLine);
             tokens.nextToken(); //skip over the RTSP version
