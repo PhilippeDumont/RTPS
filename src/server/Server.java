@@ -11,8 +11,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
@@ -23,6 +25,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.StringTokenizer;
 
+import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.Timer;
@@ -96,7 +99,8 @@ public class Server extends JFrame implements ActionListener {
 
         //Handler to close the main window
         addWindowListener(new WindowAdapter() {
-            public void windowClosing(WindowEvent e) {
+            @Override
+			public void windowClosing(WindowEvent e) {
                 //stop the timer and exit
                 timer.stop();
                 System.exit(0);
@@ -204,7 +208,8 @@ public class Server extends JFrame implements ActionListener {
     /**
      * This fuction is executed when the timer run each FRAME_PERIOD
      */
-    public void actionPerformed(ActionEvent e) {
+    @Override
+	public void actionPerformed(ActionEvent e) {
 
         //if the current image nb is less than the length of the video
         if (currentImageNumber < VIDEO_LENGTH) {
@@ -216,8 +221,15 @@ public class Server extends JFrame implements ActionListener {
             try {
             	
                 //image_length = videoStream.getnextframe(buf);
-                buf = videoStream.getNextFrame();
-                image_length = buf.length;
+				BufferedImage image = videoStream.getNextImage();
+
+				ByteArrayOutputStream stream = new ByteArrayOutputStream();
+				ImageIO.write(image, "jpeg", stream);
+				stream.flush();
+				buf = stream.toByteArray();
+				image_length = stream.size();
+
+				stream.close();
                 
             } catch (Exception e1) {
                 e1.printStackTrace();

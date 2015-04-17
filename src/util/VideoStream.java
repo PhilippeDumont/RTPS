@@ -43,6 +43,14 @@ public class VideoStream {
 		buildFrames();
 	}
 
+	public BufferedImage getNextImage() {
+		BufferedImage image = frames.get(currentFrame);
+		currentFrame++;
+
+		return image;
+
+	}
+
 	public byte[] getNextFrame() throws IOException {
 
 		BufferedImage image = frames.get(currentFrame);
