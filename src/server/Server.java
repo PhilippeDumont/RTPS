@@ -7,6 +7,7 @@ package server;
 
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
@@ -26,6 +27,7 @@ import java.net.Socket;
 import java.util.StringTokenizer;
 
 import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.Timer;
@@ -108,7 +110,13 @@ public class Server extends JFrame implements ActionListener {
         });
 
         //GUI:
-        label = new JLabel("Send frame #        ", JLabel.CENTER);
+		this.setSize(new Dimension(390, 370));
+
+		label = new JLabel("Send frame #        ", JLabel.CENTER);
+
+		label.setBounds(0, 0, 380, 280);
+		label.setIcon(null);
+
         getContentPane().add(label, BorderLayout.CENTER);
     }
 
@@ -218,10 +226,13 @@ public class Server extends JFrame implements ActionListener {
 
             //get next frame to send from the video, as well as its size
             int image_length = 0;
-            try {
+
+			BufferedImage image = null;
+
+			try {
             	
                 //image_length = videoStream.getnextframe(buf);
-				BufferedImage image = videoStream.getNextImage();
+				image = videoStream.getNextImage();
 
 				ByteArrayOutputStream stream = new ByteArrayOutputStream();
 				ImageIO.write(image, "jpeg", stream);
@@ -230,10 +241,10 @@ public class Server extends JFrame implements ActionListener {
 				image_length = stream.size();
 
 				stream.close();
-                
-            } catch (Exception e1) {
-                e1.printStackTrace();
-            }
+
+			} catch (Exception e1) {
+				e1.printStackTrace();
+			}
 
 
             //Builds an RTPpacket object containing the frame
@@ -260,7 +271,9 @@ public class Server extends JFrame implements ActionListener {
 
            
             //update GUI
-            label.setText("Send frame #" + currentImageNumber);
+
+			label.setText("Send frame #" + currentImageNumber);
+			label.setIcon(new ImageIcon(image));
 
         } else {
             //if we have reached the end of the video file, stop the timer

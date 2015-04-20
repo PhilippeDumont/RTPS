@@ -95,7 +95,8 @@ public class Client {
 
         //Frame
         f.addWindowListener(new WindowAdapter() {
-            public void windowClosing(WindowEvent e) {
+            @Override
+			public void windowClosing(WindowEvent e) {
                 System.exit(0);
             }
         });
@@ -173,7 +174,8 @@ public class Client {
     //Handler for Setup button
     //-----------------------
     class setupButtonListener implements ActionListener {
-        public void actionPerformed(ActionEvent e) {
+        @Override
+		public void actionPerformed(ActionEvent e) {
 
             System.out.println("Setup Button pressed !");
 
@@ -212,7 +214,8 @@ public class Client {
     //Handler for Play button
     //-----------------------
     class playButtonListener implements ActionListener {
-        public void actionPerformed(ActionEvent e) {
+        @Override
+		public void actionPerformed(ActionEvent e) {
 
             System.out.println("Play Button pressed !");
 
@@ -242,7 +245,8 @@ public class Client {
     //Handler for Pause button
     //-----------------------
     class pauseButtonListener implements ActionListener {
-        public void actionPerformed(ActionEvent e) {
+        @Override
+		public void actionPerformed(ActionEvent e) {
 
             System.out.println("Pause Button pressed !");
 
@@ -272,7 +276,8 @@ public class Client {
     //Handler for Teardown button
     //-----------------------
     class tearButtonListener implements ActionListener {
-        public void actionPerformed(ActionEvent e) {
+        @Override
+		public void actionPerformed(ActionEvent e) {
 
             System.out.println("Teardown Button pressed !");
 
@@ -305,7 +310,8 @@ public class Client {
     //------------------------------------
 
     class timerListener implements ActionListener {
-        public void actionPerformed(ActionEvent e) {
+        @Override
+		public void actionPerformed(ActionEvent e) {
 
             //Construct a DatagramPacket to receive data from the UDP socket
             rcvdp = new DatagramPacket(buf, buf.length);
@@ -337,6 +343,7 @@ public class Client {
                 //display the image as an ImageIcon object
                 icon = new ImageIcon(bImageFromConvert);
                 iconLabel.setIcon(icon);
+
             } catch (InterruptedIOException iioe) {
                 //System.out.println("Nothing to read");
             } catch (IOException ioe) {

@@ -25,7 +25,7 @@ public class VideoStream {
 	FileInputStream fis; // video file
 	int frame_nb; // current frame nb
 	private String filename;
-	private int currentFrame;
+	public int currentFrame;
 
 	private List<BufferedImage> frames;
 
@@ -34,7 +34,7 @@ public class VideoStream {
 		this.filename = filename;
 
 		// init variables
-		fis = new FileInputStream(filename);
+		// fis = new FileInputStream(filename);
 		frame_nb = 0;
 
 		frames = new ArrayList<BufferedImage>();
