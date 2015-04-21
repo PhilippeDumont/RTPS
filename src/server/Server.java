@@ -27,7 +27,6 @@ import java.net.Socket;
 import java.util.StringTokenizer;
 
 import javax.imageio.ImageIO;
-import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.Timer;
@@ -54,7 +53,7 @@ public class Server extends JFrame implements ActionListener {
     int currentImageNumber = 0; //image nb of the image currently transmitted
     VideoStream videoStream; //VideoStream object used to access video frames
     static int MJPEG_TYPE = 26; //RTP payload type for MJPEG video
-    static int FRAME_PERIOD = 100; //Frame period of the video to stream, in ms
+	static int FRAME_PERIOD = 10; // Frame period of the video to stream, in ms
     static int VIDEO_LENGTH = 500; //length of the video in frames
 
     Timer timer; //timer used to send the images at the video frame rate
@@ -97,7 +96,7 @@ public class Server extends JFrame implements ActionListener {
         timer.setCoalesce(true);
 
         //allocate memory for the sending buffer
-        buf = new byte[15000];
+		buf = new byte[30000];
 
         //Handler to close the main window
         addWindowListener(new WindowAdapter() {
@@ -209,9 +208,6 @@ public class Server extends JFrame implements ActionListener {
     }
 
 
-    //------------------------
-    //Handler for timer
-    //------------------------
     
     /**
      * This fuction is executed when the timer run each FRAME_PERIOD
@@ -240,6 +236,8 @@ public class Server extends JFrame implements ActionListener {
 				buf = stream.toByteArray();
 				image_length = stream.size();
 
+				System.out.println(image_length);
+
 				stream.close();
 
 			} catch (Exception e1) {
@@ -250,9 +248,6 @@ public class Server extends JFrame implements ActionListener {
             //Builds an RTPpacket object containing the frame
             RTPpacket rtp_packet = new RTPpacket(MJPEG_TYPE, currentImageNumber, currentImageNumber * FRAME_PERIOD, buf, image_length);
             
-            System.out.println("buf = " + buf);
-            System.out.println("image_length = " + image_length);
-
             //get to total length of the full rtp packet to send
             int packet_length = rtp_packet.getlength();
 
@@ -273,7 +268,6 @@ public class Server extends JFrame implements ActionListener {
             //update GUI
 
 			label.setText("Send frame #" + currentImageNumber);
-			label.setIcon(new ImageIcon(image));
 
         } else {
             //if we have reached the end of the video file, stop the timer

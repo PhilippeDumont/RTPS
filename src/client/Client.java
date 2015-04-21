@@ -133,7 +133,7 @@ public class Client {
         timer.setCoalesce(true);
 
         //allocate enough memory for the buffer used to receive data from the server
-        buf = new byte[15000];
+		buf = new byte[30000];
     }
 
     //------------------------------------
@@ -391,11 +391,6 @@ public class Client {
     //------------------------------------
     //Send RTSP Request
     //------------------------------------
-
-    //.............
-    //TO COMPLETE
-    //.............
-
     private void send_RTSP_request(String request_type) {
         try {
             //Use the RTSPBufferedWriter to write to the RTSP socket

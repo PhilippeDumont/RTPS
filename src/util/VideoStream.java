@@ -12,13 +12,10 @@ import io.humble.video.awt.MediaPictureConverter;
 import io.humble.video.awt.MediaPictureConverterFactory;
 
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.imageio.ImageIO;
 
 public class VideoStream {
 
@@ -51,21 +48,6 @@ public class VideoStream {
 
 	}
 
-	public byte[] getNextFrame() throws IOException {
-
-		BufferedImage image = frames.get(currentFrame);
-
-		ByteArrayOutputStream stream = new ByteArrayOutputStream();
-		ImageIO.write(image, "jpeg", stream);
-		stream.flush();
-		byte[] bytes = stream.toByteArray();
-		stream.close();
-
-		currentFrame++;
-
-		return bytes;
-
-	}
 
 	// -----------------------------------
 	// getnextframe
@@ -139,8 +121,9 @@ public class VideoStream {
 				videoDecoder.decode(picture, packet, 0);
 				if (picture.isComplete()) {
 
-					image = converter.toImage(image, picture);
-					this.frames.add(image);
+					BufferedImage var;
+					var = converter.toImage(image, picture);
+					this.frames.add(var);
 
 				}
 			}
